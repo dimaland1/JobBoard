@@ -20,6 +20,18 @@ data class Job(
     val status: String
 )
 
+data class AddJob(
+    val employer_id: Int,
+    val title: String,
+    val description: String,
+    val target_job: String,
+    val period: String,
+    val remuneration: Int,
+    val location: String,
+    val status: String
+)
+
+
 data class LoginRequest (
     val email: String,
     val password: String,
@@ -48,6 +60,22 @@ data class JWTLOGIN (
     val token: String
 )
 
+data class applyRequest (
+    val job_id: String,
+    val name: String,
+    val first_name : String,
+    val nationality: String,
+    val email: String,
+    val dateNaissance: String
+)
+
+data class Apply (
+    val id: Int,
+    val job_id: Int,
+    val name: String,
+    val first_name : String,
+)
+
 interface ApiInterface {
     @GET("job-offers")
     fun getJobOffers(): Call<List<Job>>
@@ -66,4 +94,16 @@ interface ApiInterface {
 
     @POST("auth/register")
     fun register(@Body request : registerRequest): Call<JWTLOGIN>
+
+    @POST("/apply/")
+    fun apply(
+        @Body request : applyRequest
+    ) : Call<Apply>
+
+    @GET("job-offers/employer/{id}")
+    fun getJobOffersByEmployer(@Path("id") id : Int): Call<List<Job>>
+
+    // retourn un status code 201
+    @POST("job-offers/")
+    fun addJobOffer(@Body job: AddJob): Call<Job>
 }

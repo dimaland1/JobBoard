@@ -11,12 +11,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -44,6 +49,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 class OffresActivity : ComponentActivity() {
 
     var nom_utilisateur = ""
+
+    // context
+    val context = this
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,18 +93,22 @@ class OffresActivity : ComponentActivity() {
     @Composable
     fun OffresScreen(jobs: List<Job>) {
         Surface {
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .padding(16.dp)
-                    .fillMaxWidth()
-                    .height(640.dp)
+                    .fillMaxSize()
             ) {
-                header(nom_utilisateur)
-                SearchBar()
-                listOffres(jobs)
+                item {
+                    header(nom_utilisateur)
+                    SearchBar()
+                }
+                items(jobs) { job ->
+                    CardOffre(offre = job)
+                }
             }
         }
     }
+
 
     @Composable
     fun header(name: String) {
@@ -125,6 +137,10 @@ class OffresActivity : ComponentActivity() {
             modifier = Modifier
                 .size(40.dp)
                 .background(color = Color.Blue, shape = CircleShape)
+                .clickable(onClick = {
+                    val intent = Intent(context, ApplicationActivity::class.java)
+                    context.startActivity(intent)
+                })
         ) {
             Text(
                 text = initial.toString(),
@@ -203,12 +219,17 @@ class OffresActivity : ComponentActivity() {
 
     @Composable
     fun listOffres(offres: List<Job>) {
-        Column {
-            for (offre in offres) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            items(offres) { offre ->
                 CardOffre(offre = offre)
             }
         }
     }
+
 
     @Composable
     fun CardOffre(offre: Job) {
@@ -219,8 +240,7 @@ class OffresActivity : ComponentActivity() {
                 .padding(8.dp)
                 .clickable {
                     val intent = Intent(context, ShowOffreActivity::class.java).apply {
-                        // Vous pouvez passer des données à la nouvelle activité si nécessaire
-                        putExtra("offre_id", offre.id.toString())
+                        putExtra("offre_id", offre.id.toString())   // id de l'offre
                     }
                     context.startActivity(intent)
                 }

@@ -1,5 +1,6 @@
 package com.example.jobboard.Candidate
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
@@ -7,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.MaterialTheme
@@ -15,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.jobboard.API.ApiInterface
 import com.example.jobboard.API.Job
@@ -26,6 +29,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class ShowOffreActivity : AppCompatActivity() {
 
+    // offre_id passer en intent
     private var id : String = "1"
     private var jobOffer = mutableStateOf<Job?>(null)
 
@@ -34,7 +38,9 @@ class ShowOffreActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         val intent = intent
-        id = intent.getStringExtra("id") ?: "1"
+        // reprendre l'id de l'offre passe en intent
+
+        id = intent.getStringExtra("offre_id") ?: "1"
 
         JobContent(id)
 
@@ -66,6 +72,8 @@ class ShowOffreActivity : AppCompatActivity() {
 
     @Composable
     fun ShowOffreScreen() {
+        val context = LocalContext.current
+
         Surface(color = Color.White) {
             Column(
                 modifier = Modifier
@@ -94,6 +102,17 @@ class ShowOffreActivity : AppCompatActivity() {
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
+                // ajouter un bouton pour postuler a l'offre
+                Button(onClick = {
+                    // nouvelle activite pour postuler
+
+                    val intent = Intent(context, ApplyActivity::class.java).apply {
+                        putExtra("offre_id", jobOffer.value?.id.toString())
+                    }
+                    context.startActivity(intent)
+                }) {
+                    Text("Postuler")
+                }
             }
         }
     }
