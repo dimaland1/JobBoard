@@ -20,6 +20,9 @@ import com.example.jobboard.API.ApiInterface
 import com.example.jobboard.ConnexionActivity
 import com.example.jobboard.API.JWTLOGIN
 import com.example.jobboard.API.registerRequest
+import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.statusBarsPadding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -33,11 +36,11 @@ class InscriptionCandidateActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         setContent {
-            CreateAccountScreen()
+            ProvideWindowInsets {
+                CreateAccountScreen()
+            }
         }
-
     }
-
 
     @Composable
     fun CreateAccountScreen() {
@@ -55,7 +58,9 @@ class InscriptionCandidateActivity : AppCompatActivity() {
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -76,21 +81,21 @@ class InscriptionCandidateActivity : AppCompatActivity() {
             TextField(
                 label = { Text("Nationalité") },
                 value = nationality, onValueChange = {
-                // Vérifier si la nationalité est valide
-                nationality = it
-            })
+                    // Vérifier si la nationalité est valide
+                    nationality = it
+                })
             Spacer(modifier = Modifier.height(16.dp))
             TextField(label = { Text("Date de naissance") },
                 value = birthDate, onValueChange = {
-                // Vérifier si le numéro de téléphone est valide
-                birthDate = it
-            })
+                    // Vérifier si le numéro de téléphone est valide
+                    birthDate = it
+                })
             Spacer(modifier = Modifier.height(16.dp))
             TextField(label = { Text("Numéro de telephone") },
                 value = phone, onValueChange = {
-                // Vérifier si le numéro de téléphone est valide
-                phone = it
-             })
+                    // Vérifier si le numéro de téléphone est valide
+                    phone = it
+                })
             Spacer(modifier = Modifier.height(16.dp))
             TextField(label = { Text("Ville") },value = city, onValueChange = {
                 city = it
@@ -103,8 +108,8 @@ class InscriptionCandidateActivity : AppCompatActivity() {
             TextField(
                 label = { Text("Mot de passe") },
                 value = password, onValueChange = {
-                password = it
-            })
+                    password = it
+                })
             Spacer(modifier = Modifier.height(16.dp))
             TextField(label = { Text("CV") },
                 value = cvLink, onValueChange = {
@@ -139,7 +144,7 @@ class InscriptionCandidateActivity : AppCompatActivity() {
 
         val retrofitBuilder = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://192.168.1.15:3020/")
+            .baseUrl("http://192.168.18.31:3020/")
             .build()
             .create(ApiInterface::class.java)
 

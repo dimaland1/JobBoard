@@ -59,13 +59,13 @@ class ApplyActivity : ComponentActivity() {
     fun ApplyJob(email : String, dateNaissance : String, nom : String, prenom : String, nationalite : String){
         val retrofitBuilder = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://192.168.1.15:3020/")
+            .baseUrl("http://192.168.18.31:3020/")
             .build()
             .create(ApiInterface::class.java)
 
         val apply = applyRequest(
             email = email,
-            job_id = intent.getStringExtra("offre_id") ?: "1",
+            job_id = intent.getStringExtra("offre_id").toString() ?: "1",
             name = nom,
             first_name = prenom,
             nationality = nationalite,
@@ -76,17 +76,13 @@ class ApplyActivity : ComponentActivity() {
         val retrofitData = retrofitBuilder.apply(apply)
 
 
-        retrofitData.enqueue(object : Callback<Apply> {
-            override fun onResponse(call: Call<Apply>, response: Response<Apply>) {
-                if (response.isSuccessful) {
-                    val intent = Intent(this@ApplyActivity, ApplicationActivity::class.java)
-                    startActivity(intent)
-                } else {
-                    Log.d("ApplyActivity", "onResponse: ${response.errorBody()}")
-                }
+        retrofitData.enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                val intent = Intent(this@ApplyActivity, ApplicationActivity::class.java)
+                startActivity(intent)
             }
 
-            override fun onFailure(call: Call<Apply>, t: Throwable) {
+            override fun onFailure(call: Call<Void>, t: Throwable) {
                 Log.d("ApplyActivity", "onFailure: $t")
             }
         })
@@ -118,18 +114,22 @@ fun ApplyScreen() {
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            Text(
-                text = "Design Lead",
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-            Text(
-                text = "Chez, Figma",
-                fontWeight = FontWeight.Bold,
-                color = Color.Blue,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            intent.getStringExtra("job_title")?.let {
+                Text(
+                    text = it,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+            }
+            intent.getStringExtra("location")?.let {
+                Text(
+                    text = it,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Blue,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
             OutlinedTextField(
                 value = prenom,
                 onValueChange = { prenom = it },

@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
+import androidx.compose.material.*
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.text.font.FontWeight
 import com.example.jobboard.API.ApiInterface
 import com.example.jobboard.API.JWTLOGIN
 import com.example.jobboard.API.LoginRequest
@@ -51,22 +52,24 @@ class ConnexionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
-
-        setContent(
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Connexion",
-                    fontSize = 24.sp,
-                    color = Color.Black
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                ConnexionField()
+        setContent {
+            Surface(color = Color(0xFFF5F5F5), modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Connexion",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    ConnexionField()
+                }
             }
         }
     }
@@ -75,42 +78,50 @@ class ConnexionActivity : ComponentActivity() {
     fun ConnexionField() {
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
-        Column {
-            TextField(
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
             )
-            TextField(
+            OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Mot de passe") },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             ToggleExample()
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    // connexion a l'api
+                    // connexion à l'API
                     val retrofitBuilder = Retrofit.Builder()
                         .addConverterFactory(GsonConverterFactory.create())
-                        .baseUrl("http://192.168.1.15:3020/")
+                        .baseUrl("http://192.168.18.31:3020/")
                         .build()
                         .create(ApiInterface::class.java)
 
-                    var user = LoginRequest(email, password, qui_es)
+                    val user = LoginRequest(email, password, qui_es)
 
                     val retrofitData = retrofitBuilder.login(user)
 
                     retrofitData.enqueue(object : Callback<JWTLOGIN> {
                         override fun onResponse(call: Call<JWTLOGIN>, response: Response<JWTLOGIN>) {
                             if (response.isSuccessful) {
-                                if(qui_es == "candidate") {
+                                if (qui_es == "candidate") {
                                     startActivity(Intent(this@ConnexionActivity, OffresActivity::class.java).apply {
                                         // Vous pouvez passer des données à la nouvelle activité si nécessaire
+                                        putExtra("connected", "true")
                                         putExtra("nom_utilisateur", response.body()?.nom_utilisateur)
+                                        putExtra("logo_url", response.body()?.logo_url )
                                     })
                                 } else {
                                     startActivity(Intent(this@ConnexionActivity, EmployerListingActivity::class.java).apply {
@@ -123,36 +134,50 @@ class ConnexionActivity : ComponentActivity() {
 
                         override fun onFailure(call: Call<JWTLOGIN>, t: Throwable) {
                             // afficher un message d'erreur
-                            Log.println(Log.ERROR, "ConnexionActivity", "Error: ${t.message}")
+                            Log.e("ConnexionActivity", "Error: ${t.message}")
                         }
                     })
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(48.dp)
             ) {
-                Text("Se connecter")
+                Text("connexion")
             }
-            inscription()
+            Inscription()
         }
     }
 
     @Composable
-    fun inscription() {
-        Column {
-            Text("Vous n'avez pas de compte ?")
+    fun Inscription() {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Vous n'avez pas de compte ?", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
                     startActivity(Intent(this@ConnexionActivity, InscriptionCandidateActivity::class.java))
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(48.dp)
             ) {
-                Text("Inscription candidat")
+                Text("Creer un compte Candidat")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
                     startActivity(Intent(this@ConnexionActivity, InscriptionEmployerActivity::class.java))
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(48.dp)
             ) {
-                Text("Inscription employeur")
+                Text("Creer un compte Employeur")
             }
         }
     }
@@ -172,13 +197,11 @@ class ConnexionActivity : ComponentActivity() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Vous etes un employeur ?")
+            Text("Vous êtes un employeur ?", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
             Switch(
                 checked = isChecked,
-                onCheckedChange = {
-                    isChecked = it
-                                  },
+                onCheckedChange = { isChecked = it },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = MaterialTheme.colors.primary,
                     checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.5f),
@@ -187,8 +210,7 @@ class ConnexionActivity : ComponentActivity() {
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Toggle is ${if (isChecked) "OUI" else "NON"}")
+            Text(text = "Toggle is ${if (isChecked) "OUI" else "NON"}", fontSize = 16.sp)
         }
     }
-
 }

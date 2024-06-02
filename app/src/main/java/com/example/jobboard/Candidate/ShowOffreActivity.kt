@@ -6,21 +6,24 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.jobboard.API.ApiInterface
 import com.example.jobboard.API.Job
+import com.example.jobboard.ConnexionActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,8 +32,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class ShowOffreActivity : AppCompatActivity() {
 
-    // offre_id passer en intent
-    private var id : String = "1"
+    private var connected = "";
+
+    private var id: String = "1"
     private var jobOffer = mutableStateOf<Job?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,8 +42,7 @@ class ShowOffreActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         val intent = intent
-        // reprendre l'id de l'offre passe en intent
-
+        connected = intent.getStringExtra("connected") ?: "true"
         id = intent.getStringExtra("offre_id") ?: "1"
 
         JobContent(id)
@@ -49,10 +52,10 @@ class ShowOffreActivity : AppCompatActivity() {
         }
     }
 
-    fun JobContent(id : String){
+    fun JobContent(id: String) {
         val retrofitBuilder = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://192.168.1.15:3020/")
+            .baseUrl("http://192.168.18.31:3020/")
             .build()
             .create(ApiInterface::class.java)
 
@@ -67,51 +70,101 @@ class ShowOffreActivity : AppCompatActivity() {
                 Log.e("SearchActivity", "Error: ${t.message}")
             }
         })
-
     }
 
     @Composable
     fun ShowOffreScreen() {
         val context = LocalContext.current
+        val job = jobOffer.value
 
         Surface(color = Color.White) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(16.dp)
             ) {
-                Text(
-                    text = "JobBoard",
-                    style = MaterialTheme.typography.h4,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                Text(
-                    text = jobOffer.value?.title ?: "Inconnue",
-                    style = MaterialTheme.typography.h4,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                Text(
-                    text = "Description \n " +
-                            "${jobOffer.value?.description ?: "Inconnue"}",
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                // ajouter un bouton pour postuler a l'offre
-                Button(onClick = {
-                    // nouvelle activite pour postuler
-
-                    val intent = Intent(context, ApplyActivity::class.java).apply {
-                        putExtra("offre_id", jobOffer.value?.id.toString())
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Spacer(modifier = Modifier.height(20.dp) )
+                    IconButton(onClick = { onBackPressed() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.Black
+                        )
                     }
-                    context.startActivity(intent)
-                }) {
-                    Text("Postuler")
+                }
+
+                job?.let {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = job.title,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${job.location}",
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Description du poste",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = job.description,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.height(34.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if(connected == "true"){
+                            Button(
+                                onClick = {
+                                    val intent = Intent(context, ApplyActivity::class.java).apply {
+                                        putExtra("offre_id", job.id.toString())
+                                        putExtra("location", job.location)
+                                        putExtra("job_title", job.title)
+                                    }
+                                    context.startActivity(intent)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            ) {
+                                Text("Postuler Maintenant")
+                            }
+                        }else{
+                            Button(
+                                onClick = {
+                                    val intent = Intent(context, ConnexionActivity::class.java).apply {
+                                    }
+                                    context.startActivity(intent)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            ) {
+                                Text("Connecter vous !")
+                            }
+                        }
+                    }
+                } ?: run {
+                    Text(text = "Loading...", modifier = Modifier.align(Alignment.CenterHorizontally))
                 }
             }
         }

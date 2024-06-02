@@ -31,11 +31,15 @@ class MainActivity : AppCompatActivity() {
             LoginScreen(onLoginClick = {
                 startActivity(Intent(this@MainActivity, ConnexionActivity::class.java))
             }, onAnonymeClick = {
-                startActivity(Intent(this@MainActivity, OffresActivity::class.java))
+                startActivity(Intent(this@MainActivity, OffresActivity::class.java).apply {
+                    putExtra("connected", "false")
+                })
             })
         }
 
     }
+
+
 }
 
 @Composable
@@ -54,7 +58,6 @@ fun LoginScreen(onLoginClick: () -> Unit, onAnonymeClick: () -> Unit) {
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
             Button(
                 onClick = onLoginClick,
                 modifier = Modifier

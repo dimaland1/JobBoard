@@ -6,18 +6,8 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +20,9 @@ import com.example.jobboard.API.ApiInterface
 import com.example.jobboard.ConnexionActivity
 import com.example.jobboard.API.JWTLOGIN
 import com.example.jobboard.API.registerRequest
+import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.statusBarsPadding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -42,29 +35,30 @@ class InscriptionEmployerActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         setContent {
-            CreateAccountScreen()
+            ProvideWindowInsets {
+                CreateAccountScreen()
+            }
         }
-
     }
-
 
     @Composable
     fun CreateAccountScreen() {
 
         var companyName by remember { mutableStateOf("") }
-        var Address by remember { mutableStateOf("") }
+        var address by remember { mutableStateOf("") }
         var phone by remember { mutableStateOf("") }
         var email by remember { mutableStateOf("") }
         var city by remember { mutableStateOf("") }
         var cp by remember { mutableStateOf("") }
-        var address by remember { mutableStateOf("") }
         var link by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -78,20 +72,21 @@ class InscriptionEmployerActivity : AppCompatActivity() {
             },
                 label = { Text("Nom de l'entreprise") })
             Spacer(modifier = Modifier.height(16.dp))
-            TextField(label = { Text("Address") },value = Address, onValueChange = {
-                Address = it
+            TextField(label = { Text("Address") },value = address, onValueChange = {
+                address = it
             })
             Spacer(modifier = Modifier.height(16.dp))
             Row {
-                TextField(
-                    modifier = Modifier.width(150.dp),
-                    label = { Text("Code postal") },value = cp, onValueChange = {
-                    cp = it
-                })
-                Spacer(modifier = Modifier.width(16.dp))
-                TextField(modifier = Modifier.width(100.dp),label = { Text("Ville") },value = city, onValueChange = {
+
+                TextField(modifier = Modifier.width(150.dp),label = { Text("Ville") },value = city, onValueChange = {
                     city = it
                 })
+                Spacer(modifier = Modifier.width(16.dp))
+                TextField(
+                    modifier = Modifier.width(100.dp),
+                    label = { Text("Cp") },value = cp, onValueChange = {
+                        cp = it
+                    })
             }
             Spacer(modifier = Modifier.height(16.dp))
             TextField(label = { Text("email") },value = email, onValueChange = {
@@ -103,7 +98,7 @@ class InscriptionEmployerActivity : AppCompatActivity() {
                     // Vérifier si le numéro de téléphone est valide
                     phone = it
                 })
-
+            Spacer(modifier = Modifier.height(16.dp))
             TextField(
                 label = { Text("Mot de passe") },
                 value = password, onValueChange = {
@@ -115,9 +110,9 @@ class InscriptionEmployerActivity : AppCompatActivity() {
             })
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = {
-                // Enregistrer le compte candidat dans la base de données
+                // Enregistrer le compte employeur dans la base de données
                 saveEmployerAccount(
-                    address = Address,
+                    address = address,
                     phone = phone,
                     email = email,
                     city = city,
@@ -126,15 +121,13 @@ class InscriptionEmployerActivity : AppCompatActivity() {
                     companyName = companyName,
                     password = password
                 )
-
-
             }) {
                 Text("Créer le compte")
             }
         }
     }
 
-    // Fonction factice pour enregistrer le compte candidat dans la base de données
+    // Fonction pour enregistrer le compte employeur dans la base de données
     fun saveEmployerAccount(
         address: String,
         phone: String,
@@ -148,7 +141,7 @@ class InscriptionEmployerActivity : AppCompatActivity() {
 
         val retrofitBuilder = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://192.168.1.15:3020/")
+            .baseUrl("http://192.168.18.31:3020/")
             .build()
             .create(ApiInterface::class.java)
 
@@ -174,18 +167,18 @@ class InscriptionEmployerActivity : AppCompatActivity() {
         retrofitData.enqueue(object : Callback<JWTLOGIN> {
             override fun onResponse(call: Call<JWTLOGIN>, response: Response<JWTLOGIN>) {
                 if (response.isSuccessful) {
-                    Log.e("InscriptionCandidateActivity", "Account created successfully")
+                    Log.e("InscriptionEmployerActivity", "Account created successfully")
                     // ouvrir l'intent de la page d'accueil
                     val intent = Intent(this@InscriptionEmployerActivity, ConnexionActivity::class.java).apply {
                     }
                     startActivity(intent)
                 } else {
-                    Log.e("InscriptionCandidateActivity", "Failed to create account")
+                    Log.e("InscriptionEmployerActivity", "Failed to create account")
                 }
             }
 
             override fun onFailure(call: Call<JWTLOGIN>, t: Throwable) {
-                Log.e("InscriptionCandidateActivity", "Error: ${t.message}")
+                Log.e("InscriptionEmployerActivity", "Error: ${t.message}")
             }
         })
 

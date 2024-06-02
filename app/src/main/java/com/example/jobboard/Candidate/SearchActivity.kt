@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,11 +15,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,7 +74,7 @@ class SearchActivity : AppCompatActivity() {
     fun getJobOffersBy(JobName: String, city: String) {
         val retrofitBuilder = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://192.168.1.15:3020/")
+            .baseUrl("http://192.168.18.31:3020/")
             .build()
             .create(ApiInterface::class.java)
 
@@ -123,7 +132,7 @@ class SearchActivity : AppCompatActivity() {
         Surface(color = Color.White) {
             Column(){
                 for(offre in jobOffers.value){
-                    cardOffre(offre)
+                    CardOffre(offre)
                 }
             }
         }
@@ -131,84 +140,117 @@ class SearchActivity : AppCompatActivity() {
 
 
     @Composable
-    fun cardOffre(offre: Job) {
-        Surface(
+    fun CardOffre(offre: Job) {
+        val context = LocalContext.current
+
+        Card(
+            shape = RoundedCornerShape(8.dp),
+            elevation = 4.dp,
             modifier = Modifier
-                .padding(8.dp)
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+                .clickable {
+                    val intent = Intent(context, ShowOffreActivity::class.java).apply {
+                        putExtra("offre_id", offre.id.toString())   // id de l'offre
+                    }
+                    context.startActivity(intent)
+                }
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = offre.title)
-                Text(text = offre.period)
-                Text(text = offre.location)
+                Column {
+                    Text(
+                        text = offre.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "entreprise",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "📍 ${offre.location}",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "Publié il y a 2 jours",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Go to job details",
+                    tint = Color.Gray
+                )
             }
         }
     }
 
     @Composable
     fun SearchBar() {
-        var JobName by remember { mutableStateOf("") }
+        var jobName by remember { mutableStateOf("") }
         var city by remember { mutableStateOf("") }
         val context = LocalContext.current
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            BasicTextField(
-                value = JobName,
-                onValueChange = { JobName = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp),
-                decorationBox = { innerTextField ->
-                    Box(modifier = Modifier.padding(4.dp)) {
-                        if (JobName.isEmpty()) {
-                            Text("Designer", color = MaterialTheme.colors.onSurface.copy(alpha = 0.3f))
-                        }
-                        innerTextField()
-                    }
-                }
-            )
-            BasicTextField(
-                value = city,
-                onValueChange = { city = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp),
-                decorationBox = { innerTextField ->
-                    Box(modifier = Modifier.padding(4.dp)) {
-                        if (city.isEmpty()) {
-                            Text("Lyon", color = MaterialTheme.colors.onSurface.copy(alpha = 0.3f))
-                        }
-                        innerTextField()
-                    }
-                }
-            )
-            Button(
-                onClick = {
-
-                    if(city == "" && JobName == ""){
-                        return@Button
-                    }
-                    // Lorsque le bouton est cliqué, lancez une nouvelle Activity avec searchText comme paramètre
-                    val intent = Intent(context, SearchActivity::class.java).apply {
-                        putExtra("JobName", JobName)
-                        putExtra("city", city)
-                    }
-                    context.startActivity(intent)
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .background(color = Color.White)
-            ) {
-                Text("Rechercher",
-                    fontSize = 8.sp,
+            intent.getStringExtra("JobName")?.let {
+                OutlinedTextField(
+                    value = it,
+                    onValueChange = { jobName = it },
+                    label = { Text("Job") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
                 )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                intent.getStringExtra("city")?.let {
+                    OutlinedTextField(
+                        value = it,
+                        onValueChange = { city = it },
+                        label = { Text("Ville") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                    )
+                }
+                Button(
+                    onClick = {
+                        if (city.isNotEmpty() || jobName.isNotEmpty()) {
+                            val intent = Intent(context, SearchActivity::class.java).apply {
+                                putExtra("JobName", jobName)
+                                putExtra("city", city)
+                            }
+                            context.startActivity(intent)
+                        }
+                    },
+                    modifier = Modifier
+                        .height(56.dp)
+                ) {
+                    Text(
+                        "\uD83D\uDD0E",
+                        fontSize = 24.sp,
+                    )
+                }
             }
         }
     }
+
 
 }
 

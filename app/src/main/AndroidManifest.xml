@@ -16,6 +16,9 @@
         android:theme="@style/Theme.JobBoard"
         tools:targetApi="31">
         <activity
+            android:name=".Employer.ViewJobOfferActivity"
+            android:exported="false" />
+        <activity
             android:name=".Employer.AddOfferActivity"
             android:exported="false" />
         <activity

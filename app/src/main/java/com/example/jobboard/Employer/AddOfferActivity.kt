@@ -3,17 +3,18 @@ package com.example.jobboard.Employer
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +49,7 @@ class AddOfferActivity : AppCompatActivity() {
         var periode by remember { mutableStateOf("") }
         var description by remember { mutableStateOf("") }
         var responsabilite by remember { mutableStateOf("") }
+        var city by remember { mutableStateOf("") }
 
         Surface(
             modifier = Modifier
@@ -58,6 +60,26 @@ class AddOfferActivity : AppCompatActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                ) {
+                    IconButton(onClick = { onBackPressed() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.Black
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Déposer une offre",
+                        style = MaterialTheme.typography.caption,
+                        color = Color.Gray
+                    )
+                }
                 Text(
                     text = "Votre offre",
                     style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
@@ -74,7 +96,8 @@ class AddOfferActivity : AppCompatActivity() {
                 )
 
                 InputField(value = entreprise, onValueChange = { entreprise = it }, label = "Entreprise*")
-                InputField(value = nom, onValueChange = { nom = it }, label = "Titre du métier*")
+                InputField(value = nom, onValueChange = { nom = it }, label = "Nom*")
+                InputField(value = city, onValueChange = { city = it }, label = "Ville*")
                 InputField(value = metier, onValueChange = { metier = it }, label = "Métier ciblé*")
                 InputField(value = remuneration, onValueChange = { remuneration = it }, label = "Rémunération", keyboardType = KeyboardType.Number)
                 InputField(value = periode, onValueChange = { periode = it }, label = "Période (mois)*", keyboardType = KeyboardType.Number)
@@ -88,14 +111,18 @@ class AddOfferActivity : AppCompatActivity() {
                             description = description,
                             metier = metier,
                             periode = periode,
-                            remuneration = remuneration
+                            remuneration = remuneration,
+                            city = city
                         )
                     },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(text = "Finaliser mon offre")
+                    Text(text = "Finaliser mon offre", color = Color.White, fontSize = 16.sp)
                 }
             }
         }
@@ -106,31 +133,32 @@ class AddOfferActivity : AppCompatActivity() {
         description: String,
         metier: String,
         periode: String,
-        remuneration: String
+        remuneration: String,
+        city : String
     ) {
 
         val retrofitBuilder = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://192.168.1.15:3020/")
+            .baseUrl("http://192.168.18.31:3020/")
             .build()
             .create(ApiInterface::class.java)
 
         val addJob = AddJob(
-            employer_id = 5,
+            employer_id = 1,
             title = nom,
             description = description,
             target_job = metier,
             period = periode,
             remuneration = remuneration.toInt(),
-            location = "Paris",
-            status = "open"
+            location = city,
+            status = "Ouvert"
         )
 
         val retrofitData = retrofitBuilder.addJobOffer(addJob)
 
         retrofitData.enqueue(
-            object : Callback<Job> {
-                override fun onResponse(call: Call<Job>, response: Response<Job>) {
+            object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
                         Log.d("Retrofit", "Offer added")
                         // retourné à la page précédente
@@ -141,7 +169,7 @@ class AddOfferActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<Job>, t: Throwable) {
+                override fun onFailure(call: Call<Void>, t: Throwable) {
                     Log.e("Retrofit", "Error: ${t.message}")
                 }
             }
@@ -165,9 +193,9 @@ class AddOfferActivity : AppCompatActivity() {
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(Color.White, shape = RoundedCornerShape(4.dp))
+                    .border(1.dp, Color.Gray, shape = RoundedCornerShape(4.dp))
                     .padding(8.dp)
-                    .border(1.dp, Color.Gray)
             )
         }
     }
